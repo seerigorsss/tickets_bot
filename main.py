@@ -13,7 +13,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from config_reader import config
 from handlers import common
 from handlers import ordering_source
-from data import db_session
 
 # to download aiogram 3.x use: pip install -U --pre aiogram
 
