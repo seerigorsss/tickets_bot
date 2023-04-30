@@ -63,7 +63,6 @@ def get_schedule(city1, city2, date, transport):
         trip["source_date"] = segment["arrival"]
         trip["target_date"] = segment["departure"]
         trip["price"] = lowest_price if has_tickets else 0
-        print(trip)
         trips.append(trip)
     if len(answer) == 1:
         answer.append("нет")
