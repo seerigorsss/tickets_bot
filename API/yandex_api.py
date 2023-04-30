@@ -27,6 +27,7 @@ def get_schedule(city1, city2, date, transport):
                             f"transport_types={TRANSPORT[transport.upper()]}&" \
                             f"date={date}").json()
     answer = [f"Ближайшие 10 рейсов из {city1} в {city2} на указанную дату:"]
+    trips = []
     for segment in response["segments"]:
         thread = segment["thread"]
         ticket_info = segment["tickets_info"]
@@ -56,7 +57,16 @@ def get_schedule(city1, city2, date, transport):
         else:
             text = markdown.hlink(f"Рейс {number}. ", url) + ticket_str
         answer.append(text)
+        trip = dict()
+        trip["source_title"] = segment["from"]["title"]
+        trip["target_title"] = segment["to"]["title"]
+        trip["source_date"] = segment["arrival"]
+        trip["target_date"] = segment["departure"]
+        trip["price"] = lowest_price if has_tickets else 0
+        print(trip)
+        trips.append(trip)
     if len(answer) == 1:
         answer.append("нет")
     answer = "\n".join(answer)
-    return answer
+
+    return (answer, trips)

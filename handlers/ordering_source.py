@@ -125,7 +125,7 @@ async def transport_type_chosen(message: Message, state: FSMContext):
             f"Транспорт: {user_data['chosen_transport']}\n",
         reply_markup=ReplyKeyboardRemove()
     )
-    answer = yandex_api.get_schedule(user_data["src_city"], user_data["out_city"], user_data["chosen_date"], user_data["chosen_transport"])
+    answer, trip = yandex_api.get_schedule(user_data["src_city"], user_data["out_city"], user_data["chosen_date"], user_data["chosen_transport"])
     await message.answer(
         text=answer
     )
