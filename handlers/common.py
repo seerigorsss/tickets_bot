@@ -16,9 +16,7 @@ router = Router()
 @router.message(Command('start'))
 async def cmd_start(message: types.Message):
     await message.answer(WELCOME_MESSAGE)
-    time.sleep(5)
     await message.answer(ORDER_MESSAGE)
-    time.sleep(3)
     await message.answer(CANCEL_MESSAGE)
 
 
@@ -31,3 +29,5 @@ async def cmd_cancel(message: Message, state: FSMContext):
              f"{ORDER_MESSAGE}",
         reply_markup=ReplyKeyboardRemove()
     )
+
+
