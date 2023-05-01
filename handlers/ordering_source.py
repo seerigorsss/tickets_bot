@@ -119,16 +119,15 @@ async def transport_type_chosen(message: Message, state: FSMContext):
     db_sess = db_session.create_session()
 
     # Если поездки нет в БД, то заносим ее
-    if not db_sess.query(Trips).filter(Trips.user_id == message.from_user.id).first():
-        trip = Trips(
+    trip = Trips(
             source_title=user_data['src_city'],
             target_title=user_data['out_city'],
             source_date=datetime.strptime(user_data['chosen_date'], '%Y-%m-%d'),
             source_transport_type=user_data['chosen_transport'],
             user_id=message.from_user.id
         )
-        db_sess.add(trip)
-        db_sess.commit()
+    db_sess.add(trip)
+    db_sess.commit()
 
     await message.answer(
         text=f"Спасибо! Ваша поездка сохранена. Вот её данные:\n" \
