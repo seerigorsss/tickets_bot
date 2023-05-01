@@ -45,7 +45,6 @@ def get_schedule(city1, city2, date, transport, format=False):
                             f"date={date}").json()
     answer = [f"Ближайшие 10 рейсов из {city1} в {city2} на указанную дату:"]
     trips = []
-    print(response)
     for segment in response["segments"]:
         thread = segment["thread"]
         ticket_info = segment["tickets_info"]
