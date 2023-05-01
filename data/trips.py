@@ -13,10 +13,10 @@ class Trips(SqlAlchemyBase, SerializerMixin):
     source_title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     target_title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     source_date = sqlalchemy.Column(sqlalchemy.DateTime)
-    target_date = sqlalchemy.Column(sqlalchemy.DateTime)
+    target_date = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
     price = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    is_private = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
-
+    source_transport_type = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    target_transport_type = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
     user = orm.relationship('User')

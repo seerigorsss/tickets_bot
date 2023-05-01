@@ -1,10 +1,13 @@
 import requests
 from aiogram.utils import markdown
-from config_reader import config
+
+# from config_reader import config
 
 API_KEY = "b7acf9ac-111a-4d6e-bb9f-d2ce0ecd766d"
+TICKET_URL = "https://travel.yandex.ru/avia/flights/"
 STATIONS = dict()
 TRANSPORT = dict()
+
 
 def load_data():
     global STATIONS
@@ -17,7 +20,11 @@ def load_data():
     TRANSPORT["ЭЛЕКТРИЧКА"] = "suburban"
     TRANSPORT["АВТОБУС"] = "bus"
 
-def get_schedule(city1, city2, date, transport):
+
+load_data()
+
+
+def get_schedule(city1, city2, date, transport, format=False):
     response = requests.get(f"https://api.rasp.yandex.net/v3.0/search/?apikey={API_KEY}&" \
                             f"format=json&" \
                             f"from={STATIONS[city1.upper()]}&" \
@@ -45,13 +52,13 @@ def get_schedule(city1, city2, date, transport):
             ticket_str = f"Билеты от {lowest_price} {currency}"
         else:
             ticket_str = "Нет информации о билетах"
-        number = thread["number"]
-        url = thread["carrier"]["url"]
+        number = "-".join(thread["number"].split())
+        url = f'{TICKET_URL}{number}/'
         if number == "":
             number = short_title
             if short_title == "":
                 number = title
-        
+
         if url == "":
             text = f"Рейс {number}. {ticket_str}"
         else:
@@ -68,4 +75,4 @@ def get_schedule(city1, city2, date, transport):
         answer.append("нет")
     answer = "\n".join(answer)
 
-    return (answer, trips)
+    return answer
