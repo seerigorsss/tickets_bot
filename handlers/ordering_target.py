@@ -29,8 +29,7 @@ class OrderTargetTicket(StatesGroup):
 @router.message(Command(commands=["return"]))
 async def cmd_return(message: Message, state: FSMContext):
     await message.answer(
-        text="Спасибо. Теперь, пожалуйста, введите дату отправления в формате yyyy-mm-dd:\n" \
-             "Для начала выберите город отправления:",
+        text="Спасибо. Теперь, пожалуйста, введите дату отправления в формате yyyy-mm-dd:\n",
         reply_markup=ReplyKeyboardRemove()
     )
 
@@ -69,9 +68,9 @@ async def transport_type_chosen(message: Message, state: FSMContext):
     db_sess = db_session.create_session()
 
     # Обращаемся к уже существующей записи о БД в поездке, принадлежащей нашему пользователю
-    current_trip = db_sess.query(Trips).filter(Trips.user_id == message.from_user.id).first()
+    current_trip = db_sess.query(Trips).filter(Trips.user_id == message.from_user.id).all()[-1]
     current_trip.target_date = datetime.strptime(user_data['chosen_date'], '%Y-%m-%d')
-    current_trip.target_transport_type = user_data['chosen_transport']
+    current_trip.target_transport_type = user_data['chosen_transport'].capitalize()
     db_sess.commit()
     await message.answer(
         text=f"Спасибо! Ваша поездка сохранена. Вот её данные:\n\n"

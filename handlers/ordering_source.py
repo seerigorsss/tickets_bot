@@ -120,10 +120,10 @@ async def transport_type_chosen(message: Message, state: FSMContext):
 
     # Если поездки нет в БД, то заносим ее
     trip = Trips(
-            source_title=user_data['src_city'],
-            target_title=user_data['out_city'],
+            source_title=user_data['src_city'].capitalize(),
+            target_title=user_data['out_city'].capitalize(),
             source_date=datetime.strptime(user_data['chosen_date'], '%Y-%m-%d'),
-            source_transport_type=user_data['chosen_transport'],
+            source_transport_type=user_data['chosen_transport'].capitalize(),
             user_id=message.from_user.id
         )
     db_sess.add(trip)
@@ -139,8 +139,6 @@ async def transport_type_chosen(message: Message, state: FSMContext):
     )
     answer, trips = yandex_api.get_schedule(user_data["src_city"], user_data["out_city"], user_data["chosen_date"],
                                            user_data["chosen_transport"])
-    print(user_data["src_city"], user_data["out_city"], user_data["chosen_date"],
-          user_data["chosen_transport"])
 
     await message.answer(
         text=answer
