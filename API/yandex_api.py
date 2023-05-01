@@ -12,8 +12,10 @@ TRANSPORT = dict()
 def load_data():
     global STATIONS
     global TRANSPORT
-    STATIONS["МОСКВА"] = "c213"
-    STATIONS["САНКТ-ПЕТЕРБУРГ"] = "c2"
+    with open("station_list", "r", encoding="utf-8") as file:
+        for i in range(13355):
+            current_line = file.readline().strip("\n").split("=")
+            STATIONS[current_line[0]] = (current_line[1], "moskva")
 
     TRANSPORT["САМОЛЕТ"] = "plane"
     TRANSPORT["ПОЕЗД"] = "train"
@@ -21,20 +23,29 @@ def load_data():
     TRANSPORT["АВТОБУС"] = "bus"
 
 
-load_data()
+def get_url(transport_type, number, city1, city2, date):
+    if transport_type == TRANSPORT["САМОЛЕТ"]:
+        return f"{TICKET_URL}{number}"
+    if transport_type == TRANSPORT["ПОЕЗД"]:
+        return f"https://travel.yandex.ru/trains/?when={date}"
+    if transport_type == TRANSPORT["ЭЛЕКТРИЧКА"]:
+        return f"https://travel.yandex.ru/buses/?when={date}"
+    if transport_type == TRANSPORT["АВТОБУС"]:
+        return f"https://travel.yandex.ru/trains/?when={date}"
 
 
 def get_schedule(city1, city2, date, transport, format=False):
     response = requests.get(f"https://api.rasp.yandex.net/v3.0/search/?apikey={API_KEY}&" \
                             f"format=json&" \
-                            f"from={STATIONS[city1.upper()]}&" \
-                            f"to={STATIONS[city2.upper()]}&" \
+                            f"from={STATIONS[city1.upper()][0]}&" \
+                            f"to={STATIONS[city2.upper()][0]}&" \
                             f"lang=ru_RU&" \
                             f"limit=10&" \
                             f"transport_types={TRANSPORT[transport.upper()]}&" \
                             f"date={date}").json()
     answer = [f"Ближайшие 10 рейсов из {city1} в {city2} на указанную дату:"]
     trips = []
+    print(response)
     for segment in response["segments"]:
         thread = segment["thread"]
         ticket_info = segment["tickets_info"]
@@ -53,7 +64,7 @@ def get_schedule(city1, city2, date, transport, format=False):
         else:
             ticket_str = "Нет информации о билетах"
         number = "-".join(thread["number"].split())
-        url = f'{TICKET_URL}{number}/'
+        url = get_url(TRANSPORT[transport.upper()], number, city1, city2, date)
         if number == "":
             number = short_title
             if short_title == "":
@@ -70,9 +81,10 @@ def get_schedule(city1, city2, date, transport, format=False):
         trip["source_date"] = segment["arrival"]
         trip["target_date"] = segment["departure"]
         trip["price"] = lowest_price if has_tickets else 0
+        trip["name"] = f"Рейс {number}"
         trips.append(trip)
     if len(answer) == 1:
         answer.append("нет")
     answer = "\n".join(answer)
 
-    return answer
+    return (answer, trips)

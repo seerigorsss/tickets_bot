@@ -2,3 +2,5 @@ aiogram==3.0.0b7
 python-dotenv==0.21.1
 sqlalchemy
 filters
+sqlalchemy_serializer
+aiogram3-calendar

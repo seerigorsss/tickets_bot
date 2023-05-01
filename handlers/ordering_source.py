@@ -16,7 +16,7 @@ from data.trips import Trips
 
 router = Router()
 
-available_cities = ["Москва", "Санкт-Петербург"]
+available_cities = yandex_api.STATIONS.keys()
 available_transport_types = ["самолет", "поезд", "электричка", "автобус"]
 
 # available_drink_sizes = ["0.2", "0.3", "0.5"]
@@ -35,37 +35,49 @@ async def cmd_order(message: Message, state: FSMContext):
     await message.answer(
         text="Приступим к поиску билетов.\n" \
              "Для начала выберите город отправления:",
-        reply_markup=make_row_keyboard(available_cities)
+        reply_markup=make_row_keyboard(["МОСКВА", "САНКТ-ПЕТЕРБУРГ"])
     )
     await state.set_state(OrderSourceTicket.choosing_out_place)
 
 
 @router.message(
-    OrderSourceTicket.choosing_out_place,
-    F.text.in_(available_cities)
+    OrderSourceTicket.choosing_out_place
 )
 async def out_place_chosen(message: Message, state: FSMContext):
-    await state.update_data(src_city=message.text)
+    city = message.text.upper()
+    if city not in available_cities:
+        await message.answer(
+            text="Я не знаю такого города.\n\n"
+                "Пожалуйста, выберите один из городов ниже или напишите свой:",
+            reply_markup=make_row_keyboard(["МОСКВА", "САНКТ-ПЕТЕРБУРГ"])
+            )
+        return
+    await state.update_data(src_city=city)
     await message.answer(
         text="Спасибо. Теперь, пожалуйста, введите город назначения:",
-        reply_markup=make_row_keyboard(available_cities)
+        reply_markup=make_row_keyboard(["МОСКВА", "САНКТ-ПЕТЕРБУРГ"])
     )
     await state.set_state(OrderSourceTicket.choosing_src_place)
 
 
 @router.message(
-    OrderSourceTicket.choosing_src_place,
-    F.text.in_(available_cities)
+    OrderSourceTicket.choosing_src_place
 )
 async def src_place_chosen(message: Message, state: FSMContext):
     user_data = await state.get_data()
-    out_city = message.text
+    out_city = message.text.upper()
+    if out_city not in available_cities:
+        await message.answer(
+            text="Я не знаю такого города.\n\n"
+                "Пожалуйста, выберите один из городов ниже или напишите свой:",
+            reply_markup=make_row_keyboard(["МОСКВА", "САНКТ-ПЕТЕРБУРГ"])
+            )
+        return
     if out_city == user_data["src_city"]:
         await message.answer(
             text="Вы уже указали этот город ранее! Укажите другой город.",
-            reply_markup=make_row_keyboard(available_cities)
+            reply_markup=make_row_keyboard(["МОСКВА", "САНКТ-ПЕТЕРБУРГ"])
         )
-        await state.set_state(OrderSourceTicket.choosing_src_place)
         return
 
     await state.update_data(out_city=out_city)
@@ -74,25 +86,6 @@ async def src_place_chosen(message: Message, state: FSMContext):
         reply_markup=ReplyKeyboardRemove()
     )
     await state.set_state(OrderSourceTicket.choosing_src_date)
-
-
-@router.message(OrderSourceTicket.choosing_src_place)
-async def src_place_chosen_incorrectly(message: Message):
-    await message.answer(
-        text="Я не знаю такого города.\n\n"
-             "Пожалуйста, выберите один из городов ниже:",
-        reply_markup=make_row_keyboard(available_cities)
-    )
-
-
-@router.message(OrderSourceTicket.choosing_out_place)
-async def src_place_chosen_incorrectly(message: Message):
-    await message.answer(
-        text="Я не знаю такого города.\n\n"
-             "Пожалуйста, выберите один из городов ниже:",
-        reply_markup=make_row_keyboard(available_cities)
-    )
-
 
 @router.message(OrderSourceTicket.choosing_src_date)
 async def src_date_chosen(message: Message, state: FSMContext):
@@ -145,7 +138,7 @@ async def transport_type_chosen(message: Message, state: FSMContext):
              f"Транспорт: {user_data['chosen_transport']}\n",
         reply_markup=ReplyKeyboardRemove()
     )
-    answer = yandex_api.get_schedule(user_data["src_city"], user_data["out_city"], user_data["chosen_date"],
+    answer, trips = yandex_api.get_schedule(user_data["src_city"], user_data["out_city"], user_data["chosen_date"],
                                            user_data["chosen_transport"])
     print(user_data["src_city"], user_data["out_city"], user_data["chosen_date"],
           user_data["chosen_transport"])
